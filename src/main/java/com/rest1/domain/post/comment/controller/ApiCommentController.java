@@ -41,4 +41,17 @@ public class ApiCommentController {
         Comment comment=post.findCommentById(commentId).get();
         return new CommentDto(comment);
     }
+
+    @GetMapping("/{postId}/comments/{commentId}/delete")
+    @Transactional
+    public String deleteItem(
+        @PathVariable Long postId,
+        @PathVariable Long commentId
+        ){
+            Post post=postService.findById(postId).get();
+            postService.deleteComment(post, commentId);
+
+            return "%d번 댓글이 삭제되었습니다.".formatted(commentId);
+
+        }
 }
