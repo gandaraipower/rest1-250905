@@ -1,6 +1,7 @@
 package com.rest1.domain.post.post.entity;
 
 import com.rest1.domain.post.comment.entity.Comment;
+import com.rest1.domain.post.post.dto.PostDto;
 import com.rest1.global.jpa.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -57,4 +58,14 @@ public class Post extends BaseEntity {
                 .findFirst();
     }
 
+    public PostDto toDto(){
+        return new PostDto(
+                this.getId(),
+                this.getCreateDate(),
+                this.getModifyDate(),
+                this.getTitle(),
+                this.getContent()
+
+        );
+    }
 }
