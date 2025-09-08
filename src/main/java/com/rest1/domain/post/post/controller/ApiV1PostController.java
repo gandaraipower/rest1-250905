@@ -1,7 +1,6 @@
 package com.rest1.domain.post.post.controller;
 
 import com.rest1.domain.post.post.dto.PostDto;
-import com.rest1.domain.post.post.entity.Post;
 import com.rest1.domain.post.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +23,7 @@ public class ApiV1PostController {
 
 
       List<PostDto> posts=postService.findAll().stream()
-              .map(Post::toDto)
+              .map(post -> new PostDto(post))
               .toList();
       return posts;
     }
