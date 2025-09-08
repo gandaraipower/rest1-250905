@@ -25,7 +25,7 @@ public class ApiCommentController {
     public List<CommentDto> getItems(
             @PathVariable Long postId
     ) {
-        Post post=postService.findById(postId).get();
+        Post post = postService.findById(postId).get();
         return post.getComments().stream().
                 map(CommentDto::new)
                 .toList();
@@ -37,21 +37,21 @@ public class ApiCommentController {
             @PathVariable Long postId,
             @PathVariable Long commentId
     ) {
-        Post post=postService.findById(postId).get();
-        Comment comment=post.findCommentById(commentId).get();
+        Post post = postService.findById(postId).get();
+        Comment comment = post.findCommentById(commentId).get();
         return new CommentDto(comment);
     }
 
     @GetMapping("/{postId}/comments/{commentId}/delete")
     @Transactional
     public String deleteItem(
-        @PathVariable Long postId,
-        @PathVariable Long commentId
-        ){
-            Post post=postService.findById(postId).get();
-            postService.deleteComment(post, commentId);
+            @PathVariable Long postId,
+            @PathVariable Long commentId
+    ) {
+        Post post = postService.findById(postId).get();
+        postService.deleteComment(post, commentId);
 
-            return "%d번 댓글이 삭제되었습니다.".formatted(commentId);
+        return "%d번 댓글이 삭제되었습니다.".formatted(commentId);
 
-        }
+    }
 }
