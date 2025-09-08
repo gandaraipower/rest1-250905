@@ -50,10 +50,11 @@ public class ApiCommentController {
             @PathVariable Long commentId
     ) {
         Post post = postService.findById(postId).get();
-        postService.deleteComment(post, commentId);
+        Comment comment=post.findCommentById(commentId).get();
 
         return new RsData("204-1",
-                "%d번 댓글이 삭제되었습니다.".formatted(commentId)
+                "%d번 댓글이 삭제되었습니다.".formatted(commentId),
+                new CommentDto(comment)
         );
 
     }
