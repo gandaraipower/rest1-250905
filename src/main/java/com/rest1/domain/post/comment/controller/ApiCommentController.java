@@ -4,6 +4,7 @@ import com.rest1.domain.post.comment.dto.CommentDto;
 import com.rest1.domain.post.comment.entity.Comment;
 import com.rest1.domain.post.post.entity.Post;
 import com.rest1.domain.post.post.service.PostService;
+import com.rest1.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,14 +45,16 @@ public class ApiCommentController {
 
     @GetMapping("/{postId}/comments/{commentId}/delete")
     @Transactional
-    public String deleteItem(
+    public RsData deleteItem(
             @PathVariable Long postId,
             @PathVariable Long commentId
     ) {
         Post post = postService.findById(postId).get();
         postService.deleteComment(post, commentId);
 
-        return "%d번 댓글이 삭제되었습니다.".formatted(commentId);
+        return new RsData("204-1",
+                "%d번 댓글이 삭제되었습니다.".formatted(commentId)
+        );
 
     }
 }
