@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,14 +71,15 @@ public class ApiV1PostController {
     }
 
     @PostMapping
-    public RsData<PostWriteResBody> createItem(
+    public ResponseEntity<RsData<PostWriteResBody>> createItem(
             @RequestBody @Valid PostWriteReqBody reqBody
     ) {
         Post post = postService.write(reqBody.title, reqBody.content);
 
         long totalCount=postService.count();
 
-        return new RsData<>(
+        // 1. RsData 객체를 먼저 온전하게 만듭니다.
+        RsData<PostWriteResBody> rsData = new RsData<>(
                 "201-1",
                 "%d번 게시물이 생성되었습니다.".formatted(post.getId()),
                 new PostWriteResBody(
@@ -85,6 +88,8 @@ public class ApiV1PostController {
                 )
         );
 
+        // 2. 완성된 rsData 객체와 HTTP 상태 코드를 ResponseEntity에 담아 반환합니다.
+        return new ResponseEntity<>(rsData, HttpStatus.CREATED);
     }
 
 }
