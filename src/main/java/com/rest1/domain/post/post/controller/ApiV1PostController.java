@@ -52,7 +52,7 @@ public class ApiV1PostController {
         );
     }
 
-    record PostWriteForm(
+    record PostWriteReqBody(
             @NotBlank
             @Size(min = 2, max = 10)
             String title,
@@ -65,9 +65,9 @@ public class ApiV1PostController {
 
     @PostMapping
     public ResponseEntity<RsData<PostDto>> createItem(
-            @RequestBody @Valid PostWriteForm form
+            @RequestBody @Valid PostWriteReqBody reqBody
     ) {
-        Post post = postService.write(form.title, form.content);
+        Post post = postService.write(reqBody.title, reqBody.content);
 
         RsData<PostDto> rsData = new RsData<>(
                 "201-1",
