@@ -17,18 +17,17 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")
-public class ApiCommentController {
+public class ApiV1CommentController {
 
     private final PostService postService;
 
     @GetMapping("/{postId}/comments")
-    @Transactional(readOnly = true)
     public List<CommentDto> getItems(
             @PathVariable Long postId
     ) {
         Post post = postService.findById(postId).get();
-        return post.getComments().stream().
-                map(CommentDto::new)
+        return post.getComments().stream()
+                .map(CommentDto::new)
                 .toList();
     }
 
@@ -45,17 +44,23 @@ public class ApiCommentController {
 
     @GetMapping("/{postId}/comments/{commentId}/delete")
     @Transactional
-    public RsData deleteItem(
+    public RsData<Void> deleteItem(
             @PathVariable Long postId,
             @PathVariable Long commentId
     ) {
-        Post post = postService.findById(postId).get();
-        Comment comment=post.findCommentById(commentId).get();
 
-        return new RsData("204-1",
-                "%d번 댓글이 삭제되었습니다.".formatted(commentId),
-                new CommentDto(comment)
+        Post post = postService.findById(postId).get();
+        Comment comment = post.findCommentById(commentId).get();
+
+        postService.deleteComment(post, commentId);
+
+        RsData<Void> rsData = new RsData<>(
+                "204-1",
+                "%d번 댓글이 삭제되었습니다.".formatted(commentId)
         );
 
+        return rsData;
     }
+
+
 }
