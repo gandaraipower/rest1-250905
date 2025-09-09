@@ -1,5 +1,7 @@
 package com.rest1.domain.post.post.controller;
 
+import com.rest1.domain.post.post.entity.Post;
+import com.rest1.domain.post.post.repository.PostRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +13,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -61,4 +64,39 @@ public class ApiV1PostControllerTest {
         resultActions
                 .andExpect(status().isCreated());
     }
+
+    @Test
+    @DisplayName("글 수정")
+    void t3() throws Exception {
+
+        Long targetId = 1L;
+        String title = "수정된 제목입니다.";
+        String content = "수정된 내용입니다.";
+
+        ResultActions resultActions = mvc.
+                perform(
+                        put("/api/v1/posts/%d".formatted(targetId))
+                                .contentType(MediaType.APPLICATION_JSON) // 데이터 형식이 JSON임을 명시
+                                .content("""
+                                        {
+                                            "title": "%s",
+                                            "content": "%s"
+                                        }
+                                        """.formatted(title, content))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("modifyItem"))
+                .andExpect(status().isOk());
+
+        Post post=postRepository.findById(targetId).get();
+
+        assertThat(post.getTitle()).isEqualTo(title);
+        assertThat(post.getContent()).isEqualTo(content);
+    }
+
+    @Autowired
+    private PostRepository postRepository;
 }
