@@ -8,8 +8,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +20,7 @@ public class ApiV1PostController {
 
     private final PostService postService;
 
+
     @GetMapping
     @Transactional(readOnly = true)
     public List<PostDto> getItems() {
@@ -29,6 +28,7 @@ public class ApiV1PostController {
                 .map(PostDto::new)
                 .toList();
     }
+
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
@@ -39,6 +39,7 @@ public class ApiV1PostController {
         return new PostDto(post);
     }
 
+
     @DeleteMapping("/{id}")
     public RsData<Void> deleteItem(
             @PathVariable Long id
@@ -47,39 +48,39 @@ public class ApiV1PostController {
         postService.delete(post);
 
         return new RsData<Void>(
-                "204-1",
+                "200-1",
                 "%d번 게시물이 삭제되었습니다.".formatted(id)
         );
     }
+
 
     record PostWriteReqBody(
             @NotBlank
             @Size(min = 2, max = 10)
             String title,
+
             @NotBlank
             @Size(min = 2, max = 100)
             String content
     ) {
-
     }
 
     record PostWriteResBody(
             PostDto postDto,
-            Long totalCount
-    ) {
-
-    }
+            long totalCount
+    ) {}
 
     @PostMapping
-    public ResponseEntity<RsData<PostWriteResBody>> createItem(
+    @Transactional
+    public RsData<PostWriteResBody> createItem(
             @RequestBody @Valid PostWriteReqBody reqBody
     ) {
         Post post = postService.write(reqBody.title, reqBody.content);
+        long totalCount = postService.count();
 
-        long totalCount=postService.count();
+        System.out.println("createItem 메서드 실행");
 
-        // 1. RsData 객체를 먼저 온전하게 만듭니다.
-        RsData<PostWriteResBody> rsData = new RsData<>(
+        return new RsData<>(
                 "201-1",
                 "%d번 게시물이 생성되었습니다.".formatted(post.getId()),
                 new PostWriteResBody(
@@ -87,9 +88,5 @@ public class ApiV1PostController {
                         totalCount
                 )
         );
-
-        // 2. 완성된 rsData 객체와 HTTP 상태 코드를 ResponseEntity에 담아 반환합니다.
-        return new ResponseEntity<>(rsData, HttpStatus.CREATED);
     }
-
 }
