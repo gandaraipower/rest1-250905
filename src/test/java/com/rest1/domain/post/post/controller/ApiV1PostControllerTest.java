@@ -15,9 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -27,6 +26,9 @@ public class ApiV1PostControllerTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private PostRepository postRepository;
 
     @Test
     @DisplayName("글 다건 조회")
@@ -42,8 +44,30 @@ public class ApiV1PostControllerTest {
     }
 
     @Test
-    @DisplayName("글 생성")
+    @DisplayName("글 단건 조회")
     void t2() throws Exception {
+
+        long targetId=1;
+        ResultActions resultActions = mvc.
+                perform(
+                        get("/api/v1/posts/%d".formatted(targetId))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("getItem"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.subject").value("제목1"))
+                .andExpect(jsonPath("$.body").value("내용1"));
+    }
+
+    @Test
+    @DisplayName("글 생성")
+    void t3() throws Exception {
 
         String title = "새로운 제목입니다.";
         String content = "새로운 내용입니다.";
@@ -67,7 +91,7 @@ public class ApiV1PostControllerTest {
 
     @Test
     @DisplayName("글 수정")
-    void t3() throws Exception {
+    void t4() throws Exception {
 
         Long targetId = 1L;
         String title = "수정된 제목입니다.";
@@ -86,17 +110,17 @@ public class ApiV1PostControllerTest {
                 )
                 .andDo(print());
 
+        //필수 검증
         resultActions
                 .andExpect(handler().handlerType(ApiV1PostController.class))
                 .andExpect(handler().methodName("modifyItem"))
                 .andExpect(status().isOk());
 
+        
+        //선택적 검증
         Post post=postRepository.findById(targetId).get();
 
         assertThat(post.getTitle()).isEqualTo(title);
         assertThat(post.getContent()).isEqualTo(content);
     }
-
-    @Autowired
-    private PostRepository postRepository;
 }
