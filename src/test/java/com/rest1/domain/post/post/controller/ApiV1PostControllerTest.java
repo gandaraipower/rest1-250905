@@ -53,7 +53,7 @@ public class ApiV1PostControllerTest {
 
         resultActions
                 .andExpect(jsonPath("$.length()").value(posts.size()))
-                .andExpect(jsonPath("$[*].id",containsInRelativeOrder(1,3)))
+                .andExpect(jsonPath("$[*].id", containsInRelativeOrder(1, 3)))
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].createDate").exists())
                 .andExpect(jsonPath("$[0].modifyDate").exists())
@@ -121,6 +121,8 @@ public class ApiV1PostControllerTest {
                 .andExpect(handler().handlerType(ApiV1PostController.class))
                 .andExpect(handler().methodName("createItem"))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.resultCode").value("201-1"))
+                .andExpect(jsonPath("$.msg").value("4번 게시물이 생성되었습니다."))
                 .andExpect(jsonPath("$.data.postDto.id").value(4))
                 .andExpect(jsonPath("$.data.postDto.createDate").exists())
                 .andExpect(jsonPath("$.data.postDto.modifyDate").exists())
@@ -149,17 +151,40 @@ public class ApiV1PostControllerTest {
                 )
                 .andDo(print());
 
-        //필수 검증
         resultActions
                 .andExpect(handler().handlerType(ApiV1PostController.class))
                 .andExpect(handler().methodName("modifyItem"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("200-1"))
+                .andExpect(jsonPath("$.msg").value("%d번 게시물이 수정되었습니다.".formatted(targetId)));
 
-
-        //선택적 검증
+        // 선택적 검증
         Post post = postRepository.findById(targetId).get();
 
         assertThat(post.getTitle()).isEqualTo(title);
         assertThat(post.getContent()).isEqualTo(content);
+    }
+
+    @Test
+    @DisplayName("글 삭제")
+    void t5() throws Exception {
+
+        long targetId = 1;
+
+        ResultActions resultActions = mvc.
+                perform(
+                        delete("/api/v1/posts/%d".formatted(targetId))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("deleteItem"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("200-1"))
+                .andExpect(jsonPath("$.msg").value("%d번 게시물이 삭제되었습니다.".formatted(targetId)));
+
+        Post post = postRepository.findById(targetId).orElse(null);
+        assertThat(post).isNull();
     }
 }
