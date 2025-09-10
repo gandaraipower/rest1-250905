@@ -13,9 +13,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -39,28 +42,46 @@ public class ApiV1PostControllerTest {
                 )
                 .andDo(print());
 
+
         resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("getItems"))
                 .andExpect(status().isOk());
+
+        List<Post> posts = postRepository.findAll();
+        for (int i = 0; i < posts.size(); i++) {
+            Post post= posts.get(i);
+            resultActions
+                    .andExpect(jsonPath("$[%d].id".formatted(i)).value(post.getId()))
+                    .andExpect(jsonPath("$[%d].createDate".formatted(i)).value(matchesPattern(post.getCreateDate().toString().replaceAll("0+$", "") + ".*")))
+                    .andExpect(jsonPath("$[%d].modifyDate".formatted(i)).value(matchesPattern(post.getModifyDate().toString().replaceAll("0+$", "") + ".*")))
+                    .andExpect(jsonPath("$[%d].subject".formatted(i)).value(post.getTitle()))
+                    .andExpect(jsonPath("$[%d].body".formatted(i)).value(post.getContent()));
+        }
+
     }
+
 
     @Test
     @DisplayName("글 단건 조회")
     void t2() throws Exception {
 
-        long targetId=1;
+        long targetId = 1;
         ResultActions resultActions = mvc.
                 perform(
                         get("/api/v1/posts/%d".formatted(targetId))
                 )
                 .andDo(print());
 
+        Post post = postRepository.findById(targetId).get();
+
         resultActions
                 .andExpect(handler().handlerType(ApiV1PostController.class))
                 .andExpect(handler().methodName("getItem"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.createDate").exists())
-                .andExpect(jsonPath("$.modifyDate").exists())
+                .andExpect(jsonPath("$.createDate").value(matchesPattern(post.getCreateDate().toString().replaceAll("0+$", "") + ".*")))
+                .andExpect(jsonPath("$.modifyDate").value(matchesPattern(post.getModifyDate().toString().replaceAll("0+$", "") + ".*")))
                 .andExpect(jsonPath("$.subject").value("제목1"))
                 .andExpect(jsonPath("$.body").value("내용1"));
     }
@@ -116,9 +137,9 @@ public class ApiV1PostControllerTest {
                 .andExpect(handler().methodName("modifyItem"))
                 .andExpect(status().isOk());
 
-        
+
         //선택적 검증
-        Post post=postRepository.findById(targetId).get();
+        Post post = postRepository.findById(targetId).get();
 
         assertThat(post.getTitle()).isEqualTo(title);
         assertThat(post.getContent()).isEqualTo(content);
