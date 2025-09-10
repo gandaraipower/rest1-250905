@@ -59,8 +59,8 @@ public class ApiV1PostControllerTest {
                 .andExpect(handler().methodName("getItem"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.createDate").exists())
+                .andExpect(jsonPath("$.modifyDate").exists())
                 .andExpect(jsonPath("$.subject").value("제목1"))
                 .andExpect(jsonPath("$.body").value("내용1"));
     }
