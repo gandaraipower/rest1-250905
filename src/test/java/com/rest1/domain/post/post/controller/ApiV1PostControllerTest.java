@@ -205,4 +205,34 @@ public class ApiV1PostControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    @DisplayName("글 작성,제목이 입력되지 않은 경우")
+    void t7() throws Exception {
+
+        String title = "";
+        String content = "새로운 내용입니다.";
+
+        ResultActions resultActions = mvc.
+                perform(
+                        post("/api/v1/posts") // post() import 필요
+                                .contentType(MediaType.APPLICATION_JSON) // 데이터 형식이 JSON임을 명시
+                                .content("""
+                                        {
+                                            "title": "%s",
+                                            "content": "%s"
+                                        }
+                                        """.formatted(title, content))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("createItem"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultCode").value("400-1"))
+                .andExpect(jsonPath("$.msg").value("""
+                        title-NotBlank-must not be blank
+                        title-Size-size must be between 2 and 10"""));
+    }
+
 }

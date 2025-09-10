@@ -1,11 +1,15 @@
 package com.rest1.global.golbaclExceptionHandler;
 
 import com.rest1.global.rsData.RsData;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.Comparator;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GLobalExceptionHandler {
@@ -16,6 +20,24 @@ public class GLobalExceptionHandler {
         return new RsData<Void>(
                 "404-1",
                 "존재하지 않는 데이터입니다."
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseBody
+    public RsData<Void> handleException(MethodArgumentNotValidException e){
+        String message = e.getBindingResult()
+                .getAllErrors()
+                .stream()
+                .filter(error -> error instanceof FieldError)
+                .map(error -> (FieldError) error)
+                .map(error -> error.getField() + "-" + error.getCode() + "-" + error.getDefaultMessage())
+                .sorted(Comparator.comparing(String::toString))
+                .collect(Collectors.joining("\n"));
+
+        return new RsData<Void>(
+                "400-1",
+                message
         );
     }
 }
