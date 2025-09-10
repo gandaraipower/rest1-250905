@@ -1,6 +1,7 @@
 package com.rest1.global.golbaclExceptionHandler;
 
 import com.rest1.global.rsData.RsData;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -38,6 +39,15 @@ public class GLobalExceptionHandler {
         return new RsData<Void>(
                 "400-1",
                 message
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseBody
+    public RsData<Void> handleException(HttpMessageNotReadableException e){
+        return new RsData<Void>(
+                "400-2",
+                "잘못된 형식의 요청 데이터입니다."
         );
     }
 }
