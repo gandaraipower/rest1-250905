@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ public class ApiV1CommentController {
 
     private final PostService postService;
 
-    @GetMapping("/{postId}/comments")
+    @GetMapping(value = "/{postId}/comments",produces =  MediaType.APPLICATION_JSON_VALUE)
     public List<CommentDto> getItems(
             @PathVariable Long postId
     ) {
@@ -31,7 +32,7 @@ public class ApiV1CommentController {
                 .toList();
     }
 
-    @GetMapping("/{postId}/comments/{commentId}")
+    @GetMapping(value = "/{postId}/comments/{commentId}",produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional(readOnly = true)
     public CommentDto getItem(
             @PathVariable Long postId,
